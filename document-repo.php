@@ -58,6 +58,7 @@ function dr_get_file_type($ext) {
         'jpg' => 'image',
         'jpeg' => 'image',
         'gif' => 'image',
+        'webp' => 'image',
         'ipynb' => 'jupyter'
     );
     return isset($map[$ext]) ? $map[$ext] : 'file';

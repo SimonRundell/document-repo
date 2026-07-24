@@ -18,6 +18,7 @@ function getFileType(ext) {
         'jpg': 'image',
         'jpeg': 'image',
         'gif': 'image',
+        'webp': 'image',
         'ipynb': 'jupyter'
     };
     return map[ext] || 'file';

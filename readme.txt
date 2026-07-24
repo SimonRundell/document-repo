@@ -31,7 +31,7 @@ CodeMonkey Document Repository is a WordPress plugin that makes it easy to creat
 * Microsoft Word (.doc, .docx) - blue icon, click to preview in Office Online
 * Microsoft Excel (.xls, .xlsx) - green icon, click to preview in Office Online
 * Microsoft PowerPoint (.ppt, .pptx) - orange icon, click to preview in Office Online
-* Images (.png, .jpg, .jpeg, .gif) - purple, shown as a thumbnail preview rather than an icon
+* Images (.png, .jpg, .jpeg, .gif, .webp) - purple, shown as a thumbnail preview rather than an icon
 * Jupyter Notebooks (.ipynb) - orange Python icon
 * Generic files - gray file icon
 
@@ -76,7 +76,7 @@ All file types are supported. The plugin automatically detects common types (PDF
 
 = Do images show a thumbnail? =
 
-Yes. Image files (.png, .jpg, .jpeg, .gif) show a real thumbnail instead of an icon, using WordPress's own generated "medium" image size. Hovering the thumbnail zooms it in for a closer look before downloading. If a site hasn't yet generated that image size for an older upload, the plugin falls back to the standard image icon.
+Yes. Image files (.png, .jpg, .jpeg, .gif, .webp) show a real thumbnail instead of an icon, using WordPress's own generated "medium" image size. Hovering the thumbnail zooms it in for a closer look before downloading. If a site hasn't yet generated that image size for an older upload, the plugin falls back to the standard image icon.
 
 = Do PDFs show a thumbnail too? =
 

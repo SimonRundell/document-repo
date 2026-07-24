@@ -72,7 +72,7 @@ registerBlockType('document-repo/document-block', {
                 'doc': 'word', 'docx': 'word',
                 'xls': 'excel', 'xlsx': 'excel',
                 'ppt': 'powerpoint', 'pptx': 'powerpoint',
-                'png': 'image', 'jpg': 'image', 'jpeg': 'image', 'gif': 'image',
+                'png': 'image', 'jpg': 'image', 'jpeg': 'image', 'gif': 'image', 'webp': 'image',
                 'ipynb': 'jupyter'
             };
             return map[ext] || 'file';

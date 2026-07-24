@@ -49,7 +49,7 @@ The plugin automatically detects and displays appropriate icons for:
 - Microsoft Word documents (.doc, .docx) - click the icon to preview in Office Online
 - Microsoft Excel spreadsheets (.xls, .xlsx, .xlsm) - click the icon to preview in Office Online
 - Microsoft PowerPoint presentations (.ppt, .pptx) - click the icon to preview in Office Online
-- Images (.png, .jpg, .jpeg, .gif) - shown as a thumbnail preview rather than an icon
+- Images (.png, .jpg, .jpeg, .gif, .webp) - shown as a thumbnail preview rather than an icon
 - Jupyter Notebooks (.ipynb)
 - Generic files (fallback icon)
 
