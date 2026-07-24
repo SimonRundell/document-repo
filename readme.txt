@@ -4,7 +4,7 @@ Tags: documents, repository, gutenberg, media, download, pdf, files
 Requires at least: 5.0
 Tested up to: 6.3
 Requires PHP: 7.4
-Stable tag: 0.5.0
+Stable tag: 0.5.1
 License: GPL v2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -18,18 +18,19 @@ CodeMonkey Document Repository is a WordPress plugin that makes it easy to creat
 
 * **Gutenberg Block Integration** - Select documents directly from your media library
 * **Multiple File Types** - Automatic icon detection for PDF, Word, Excel, PowerPoint, images, and more
-* **Image Thumbnails** - Image files show a real thumbnail preview instead of an icon, with a hover-to-zoom close-up
+* **Image & PDF Thumbnails** - Image and PDF files show a real thumbnail preview instead of an icon, with a hover-to-zoom close-up
 * **File Extension Badges** - Every document shows a colour-coded extension badge (PDF, DOCX, PNG, etc.)
+* **Office Online Previews** - Word, Excel and PowerPoint documents open in a Microsoft Office Online Viewer preview modal without leaving the page
 * **Two Shortcode Options** - Use direct attachment IDs or record-based collections
 * **Responsive Design** - Mobile-friendly document lists
 * **Custom Post Type** - Organize documents with the "Documents" post type
 * **Font Awesome Icons** - Professional file type icons with color coding
 
 **File Types Supported:**
-* PDF files (red icon)
-* Microsoft Word (.doc, .docx) - blue icon
-* Microsoft Excel (.xls, .xlsx) - green icon
-* Microsoft PowerPoint (.ppt, .pptx) - orange icon
+* PDF files (red icon, shown as a thumbnail preview when the server can generate one)
+* Microsoft Word (.doc, .docx) - blue icon, click to preview in Office Online
+* Microsoft Excel (.xls, .xlsx) - green icon, click to preview in Office Online
+* Microsoft PowerPoint (.ppt, .pptx) - orange icon, click to preview in Office Online
 * Images (.png, .jpg, .jpeg, .gif) - purple, shown as a thumbnail preview rather than an icon
 * Jupyter Notebooks (.ipynb) - orange Python icon
 * Generic files - gray file icon
@@ -77,6 +78,14 @@ All file types are supported. The plugin automatically detects common types (PDF
 
 Yes. Image files (.png, .jpg, .jpeg, .gif) show a real thumbnail instead of an icon, using WordPress's own generated "medium" image size. Hovering the thumbnail zooms it in for a closer look before downloading. If a site hasn't yet generated that image size for an older upload, the plugin falls back to the standard image icon.
 
+= Do PDFs show a thumbnail too? =
+
+Yes, the same way as images - WordPress can automatically generate a preview image for PDFs if the server has the Imagick PHP extension with the Ghostscript delegate installed (common on most hosts). If that isn't available, the plugin falls back to the standard PDF icon.
+
+= Can visitors preview Word, Excel and PowerPoint files without downloading them? =
+
+Yes. Clicking the icon for a Word, Excel or PowerPoint document opens a preview modal using the Microsoft Office Online Viewer, without leaving the page. This requires the file to be reachable at a public URL, so it only works on a live, internet-facing site - not on a local development install. The filename link next to the icon still downloads the file as normal.
+
 = Can I customize the appearance? =
 
 Yes! The plugin includes CSS classes for styling. You can override the styles in your theme's CSS file.
@@ -98,6 +107,11 @@ Yes, you can use the shortcodes in any editor: `[documents ids="123,456" title="
 
 == Changelog ==
 
+= 0.5.1 =
+* PDF files now get the same real thumbnail treatment as images, where the server supports generating one (Imagick + Ghostscript)
+* Added click-to-preview for Word, Excel and PowerPoint documents via the Microsoft Office Online Viewer, in a lightweight modal (vanilla JS, no framework dependency)
+* Clicking a Word/Excel/PowerPoint icon opens the preview; the filename link continues to download the file as before
+
 = 0.5.0 =
 * Image files now display a real thumbnail preview (WordPress "medium" image size) instead of a generic icon
 * Added a hover-to-zoom close-up preview on image thumbnails (CSS only, no click behaviour change - the filename still downloads as before)
@@ -117,6 +131,9 @@ Yes, you can use the shortcodes in any editor: `[documents ids="123,456" title="
 * Initial version with Record post type and basic Gutenberg block
 
 == Upgrade Notice ==
+
+= 0.5.1 =
+Adds PDF thumbnail previews and a click-to-preview Office Online modal for Word/Excel/PowerPoint files. The Office preview requires your site to be reachable from the public internet - it will not work on a local-only development install.
 
 = 0.5.0 =
 Adds image thumbnail previews (with hover-to-zoom) and file extension badges to both the block and shortcode output. No settings changes required.

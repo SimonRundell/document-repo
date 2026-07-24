@@ -102,6 +102,79 @@
 .dr-doc-image .dr-ext-badge { background: #6a1b9a; }
 .dr-doc-jupyter .dr-ext-badge { background: #f37626; }
 
+/* Office Online preview trigger button (wraps the Word/Excel/PowerPoint icon) */
+.dr-preview-trigger {
+    background: none;
+    border: none;
+    padding: 0;
+    margin: 0;
+    line-height: 0;
+    cursor: pointer;
+    flex-shrink: 0;
+}
+
+/* Office/PDF preview modal */
+.dr-preview-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.6);
+    z-index: 100000;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+}
+
+.dr-preview-overlay.is-open {
+    display: flex;
+}
+
+.dr-preview-modal {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    width: min(900px, 100%);
+    height: min(80vh, 700px);
+    background: #fff;
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.4);
+}
+
+.dr-preview-title {
+    padding: 12px 44px 12px 16px;
+    font-weight: 600;
+    color: #333;
+    border-bottom: 1px solid #e0e0e0;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.dr-preview-close {
+    position: absolute;
+    top: 6px;
+    right: 8px;
+    width: 32px;
+    height: 32px;
+    border: none;
+    background: transparent;
+    color: #555;
+    font-size: 24px;
+    line-height: 1;
+    cursor: pointer;
+}
+
+.dr-preview-close:hover {
+    color: #000;
+}
+
+.dr-preview-frame {
+    flex: 1;
+    width: 100%;
+    border: none;
+}
+
 /* Editor specific styles */
 .dr-block-editor .dr-document-block {
     border: 1px solid #ddd;
@@ -144,5 +217,15 @@
     .dr-ext-badge {
         font-size: 0.65em;
         padding: 1px 4px;
+    }
+
+    .dr-preview-overlay {
+        padding: 0;
+    }
+
+    .dr-preview-modal {
+        width: 100%;
+        height: 100%;
+        border-radius: 0;
     }
 }

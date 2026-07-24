@@ -10,6 +10,7 @@ document-repo/
 ├── document-repo.php (main plugin file)
 ├── frontend.js
 ├── index.php (security)
+├── preview-modal.js (Office Online / PDF preview modal)
 ├── readme.txt (WordPress standard)
 ├── README.md (GitHub/development)
 ├── style.css
@@ -93,9 +94,9 @@ When updating your plugin:
 ### 📝 Distribution Tips
 
 #### File Naming Convention:
-- Development: `document-repo-v0.5.0.zip`
+- Development: `document-repo-v0.5.1.zip`
 - Production: `codemonkey-document-repository.zip`
-- Versioned: `codemonkey-document-repository-0.5.0.zip`
+- Versioned: `codemonkey-document-repository-0.5.1.zip`
 
 #### What to Include:
 ✅ Core plugin files

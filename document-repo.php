@@ -3,7 +3,7 @@
  * Plugin Name: CodeMonkey Document Repository
  * Plugin URI: https://codemonkey.co.uk/plugins/document-repository
  * Description: Simple document repository with direct media selection in Gutenberg blocks and shortcodes for easy file downloads.
- * Version: 0.5.0
+ * Version: 0.5.1
  * Author: Simon Rundell for CodeMonkey Ltd
  * Author URI: https://codemonkey.co.uk
  * License: GPL v2 or later
@@ -19,7 +19,7 @@
 if ( ! defined( 'ABSPATH' ) ) exit;
 
 // Define plugin constants
-define( 'DOCUMENT_REPO_VERSION', '0.5.0' );
+define( 'DOCUMENT_REPO_VERSION', '0.5.1' );
 define( 'DOCUMENT_REPO_PLUGIN_URL', plugin_dir_url( __FILE__ ) );
 define( 'DOCUMENT_REPO_PLUGIN_PATH', plugin_dir_path( __FILE__ ) );
 
@@ -77,13 +77,28 @@ function dr_get_icon_class($type) {
     return isset($icons[$type]) ? $icons[$type] : 'fa-file';
 }
 
-// Renders a single document <li>: image thumbnail (falls back to icon if no
-// generated thumbnail exists yet) or file-type icon, plus an extension badge.
+// File types that get a real thumbnail image (WordPress generates these
+// automatically - for PDFs this requires the Imagick extension + Ghostscript
+// on the server; falls back to the icon below when no thumbnail exists).
+function dr_thumbnail_types() {
+    return array('image', 'pdf');
+}
+
+// File types previewable via the Microsoft Office Online Viewer iframe.
+// Requires the file to be reachable at a public URL.
+function dr_office_preview_types() {
+    return array('word', 'excel', 'powerpoint');
+}
+
+// Renders a single document <li>: image/PDF thumbnail (falls back to icon if
+// no generated thumbnail exists yet) or file-type icon, plus an extension
+// badge. Word/Excel/PowerPoint icons are wrapped in a button that opens an
+// Office Online Viewer preview modal (see preview-modal.js).
 function dr_render_doc_item($doc) {
     $ext = strtolower(pathinfo($doc['url'], PATHINFO_EXTENSION));
     $type = dr_get_file_type($ext);
 
-    $thumb = ($type === 'image' && !empty($doc['id'])) ? wp_get_attachment_image_src($doc['id'], 'medium') : false;
+    $thumb = (in_array($type, dr_thumbnail_types(), true) && !empty($doc['id'])) ? wp_get_attachment_image_src($doc['id'], 'medium') : false;
 
     $item = '<li class="dr-doc dr-doc-' . esc_attr($type) . '">';
 
@@ -92,7 +107,13 @@ function dr_render_doc_item($doc) {
     } else {
         $icon_class = dr_get_icon_class($type);
         $icon_prefix = ($type === 'jupyter') ? 'fa-brands' : 'fa-solid';
-        $item .= '<i class="dr-icon ' . esc_attr($icon_prefix) . ' ' . esc_attr($icon_class) . '"></i>';
+        $icon_html = '<i class="dr-icon ' . esc_attr($icon_prefix) . ' ' . esc_attr($icon_class) . '"></i>';
+
+        if (in_array($type, dr_office_preview_types(), true)) {
+            $item .= '<button type="button" class="dr-preview-trigger" data-preview-url="' . esc_url($doc['url']) . '" data-preview-title="' . esc_attr($doc['title']) . '" aria-label="Preview ' . esc_attr($doc['title']) . '">' . $icon_html . '</button>';
+        } else {
+            $item .= $icon_html;
+        }
     }
 
     $item .= '<a href="' . esc_url($doc['url']) . '" download>' . esc_html($doc['title']) . '</a>';
@@ -192,6 +213,25 @@ function dr_admin_scripts($hook) {
 }
 add_action('admin_enqueue_scripts', 'dr_admin_scripts');
 
+// Enqueue the shared frontend stylesheet plus the vanilla-JS Office/PDF
+// preview modal script, used by both the [documents] shortcode and the block.
+function dr_enqueue_frontend_assets() {
+    wp_enqueue_style(
+        'dr-frontend-style',
+        plugins_url('style.css', __FILE__),
+        [],
+        filemtime(plugin_dir_path(__FILE__) . 'style.css')
+    );
+
+    wp_enqueue_script(
+        'dr-preview-modal',
+        plugins_url('preview-modal.js', __FILE__),
+        [],
+        filemtime(plugin_dir_path(__FILE__) . 'preview-modal.js'),
+        true
+    );
+}
+
 // Enqueue Font Awesome for frontend display
 function dr_frontend_styles() {
     wp_enqueue_style(
@@ -245,12 +285,7 @@ function dr_documents_shortcode($atts) {
     $doc_data = dr_get_documents_data($atts['ids']);
     if (empty($doc_data)) return 'No valid documents found';
 
-    wp_enqueue_style(
-        'dr-frontend-style',
-        plugins_url('style.css', __FILE__),
-        [],
-        filemtime(plugin_dir_path(__FILE__) . 'style.css')
-    );
+    dr_enqueue_frontend_assets();
 
     return dr_render_documents_html($doc_data, $atts['title'], 'dr-document-shortcode');
 }
@@ -307,12 +342,7 @@ function dr_render_block($attributes) {
         return '<p>No documents selected.</p>';
     }
 
-    wp_enqueue_style(
-        'dr-frontend-style',
-        plugins_url('style.css', __FILE__),
-        [],
-        filemtime(plugin_dir_path(__FILE__) . 'style.css')
-    );
+    dr_enqueue_frontend_assets();
 
     return dr_render_documents_html($documents, $title, 'dr-document-block');
 }
