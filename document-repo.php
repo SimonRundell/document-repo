@@ -3,7 +3,7 @@
  * Plugin Name: CodeMonkey Document Repository
  * Plugin URI: https://codemonkey.co.uk/plugins/document-repository
  * Description: Simple document repository with direct media selection in Gutenberg blocks and shortcodes for easy file downloads.
- * Version: 0.5.1
+ * Version: 0.5.4
  * Author: Simon Rundell for CodeMonkey Ltd
  * Author URI: https://codemonkey.co.uk
  * License: GPL v2 or later
@@ -19,7 +19,7 @@
 if ( ! defined( 'ABSPATH' ) ) exit;
 
 // Define plugin constants
-define( 'DOCUMENT_REPO_VERSION', '0.5.1' );
+define( 'DOCUMENT_REPO_VERSION', '0.5.4' );
 define( 'DOCUMENT_REPO_PLUGIN_URL', plugin_dir_url( __FILE__ ) );
 define( 'DOCUMENT_REPO_PLUGIN_PATH', plugin_dir_path( __FILE__ ) );
 
@@ -78,11 +78,19 @@ function dr_get_icon_class($type) {
     return isset($icons[$type]) ? $icons[$type] : 'fa-file';
 }
 
-// File types that get a real thumbnail image (WordPress generates these
-// automatically - for PDFs this requires the Imagick extension + Ghostscript
-// on the server; falls back to the icon below when no thumbnail exists).
+// File types that get a real WordPress-generated thumbnail image.
+// PDFs are deliberately excluded: WP can only rasterize PDF thumbnails via
+// the Imagick extension + Ghostscript, which isn't reliably available on
+// every host. PDFs instead get a client-side render, see dr_pdf_preview_types().
 function dr_thumbnail_types() {
-    return array('image', 'pdf');
+    return array('image');
+}
+
+// File types previewed via client-side rendering (pdf.js) into a <canvas>,
+// with the file-type icon shown as an instant fallback until/unless it
+// renders. See pdf-preview.js.
+function dr_pdf_preview_types() {
+    return array('pdf');
 }
 
 // File types previewable via the Microsoft Office Online Viewer iframe.
@@ -105,6 +113,12 @@ function dr_render_doc_item($doc) {
 
     if ($thumb) {
         $item .= '<span class="dr-thumb-wrap"><img src="' . esc_url($thumb[0]) . '" width="' . esc_attr($thumb[1]) . '" height="' . esc_attr($thumb[2]) . '" alt="' . esc_attr($doc['title']) . '" class="dr-thumbnail" loading="lazy"></span>';
+    } elseif (in_array($type, dr_pdf_preview_types(), true)) {
+        $icon_class = dr_get_icon_class($type);
+        $item .= '<span class="dr-thumb-wrap dr-pdf-thumb-wrap">';
+        $item .= '<canvas class="dr-pdf-canvas dr-thumbnail" data-pdf-url="' . esc_url($doc['url']) . '" aria-hidden="true"></canvas>';
+        $item .= '<i class="dr-icon fa-solid ' . esc_attr($icon_class) . ' dr-pdf-fallback-icon"></i>';
+        $item .= '</span>';
     } else {
         $icon_class = dr_get_icon_class($type);
         $icon_prefix = ($type === 'jupyter') ? 'fa-brands' : 'fa-solid';
@@ -229,6 +243,24 @@ function dr_enqueue_frontend_assets() {
         plugins_url('preview-modal.js', __FILE__),
         [],
         filemtime(plugin_dir_path(__FILE__) . 'preview-modal.js'),
+        true
+    );
+
+    // pdf.js renders PDF thumbnails client-side (see dr_pdf_preview_types()) so
+    // previews don't depend on the server having Imagick + Ghostscript installed.
+    wp_enqueue_script(
+        'pdf-js',
+        'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js',
+        [],
+        '3.11.174',
+        true
+    );
+
+    wp_enqueue_script(
+        'dr-pdf-preview',
+        plugins_url('pdf-preview.js', __FILE__),
+        ['pdf-js'],
+        filemtime(plugin_dir_path(__FILE__) . 'pdf-preview.js'),
         true
     );
 }

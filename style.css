@@ -75,6 +75,23 @@
     box-shadow: 0 6px 20px rgba(0, 0, 0, 0.35);
 }
 
+/* PDF thumbnails render client-side (pdf-preview.js). The canvas stays
+   hidden - and the file icon behind it stays visible - until rendering
+   actually succeeds, so it degrades gracefully with JS disabled/blocked. */
+.dr-pdf-canvas {
+    display: none;
+    background: #fff;
+    border: 1px solid #e0e0e0;
+}
+
+.dr-pdf-canvas.dr-pdf-rendered {
+    display: block;
+}
+
+.dr-pdf-canvas.dr-pdf-rendered + .dr-pdf-fallback-icon {
+    display: none;
+}
+
 .dr-ext-badge {
     font-size: 0.7em;
     font-weight: 700;
@@ -192,6 +209,14 @@
 .dr-editor-list .dr-doc span {
     flex: 1;
     margin-right: 10px;
+}
+
+.dr-editor-list .dr-doc-dragging {
+    opacity: 0.4;
+}
+
+.dr-editor-list .dr-doc-drag-over {
+    border-top: 2px solid #0073aa;
 }
 
 /* Responsive design */

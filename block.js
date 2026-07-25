@@ -1,5 +1,5 @@
 const { registerBlockType } = wp.blocks;
-const { createElement, useState } = wp.element;
+const { createElement, useState, useRef } = wp.element;
 const { InspectorControls } = wp.blockEditor;
 const { PanelBody, Button, TextControl, Placeholder } = wp.components;
 
@@ -26,6 +26,9 @@ registerBlockType('document-repo/document-block', {
     edit: (props) => {
         const { attributes: { documents, title }, setAttributes } = props;
         const [mediaFrame, setMediaFrame] = useState(null);
+        const [dragIndex, setDragIndex] = useState(null);
+        const [overIndex, setOverIndex] = useState(null);
+        const listRef = useRef(null);
 
         const openMediaLibrary = () => {
             let frame;
@@ -59,6 +62,59 @@ registerBlockType('document-repo/document-block', {
         const removeDocument = (docId) => {
             const updatedDocs = documents.filter(doc => doc.id !== docId);
             setAttributes({ documents: updatedDocs });
+        };
+
+        const moveDocument = (fromIndex, toIndex) => {
+            if (fromIndex === toIndex || fromIndex == null || toIndex == null) return;
+            const updatedDocs = documents.slice();
+            const [moved] = updatedDocs.splice(fromIndex, 1);
+            updatedDocs.splice(toIndex, 0, moved);
+            setAttributes({ documents: updatedDocs });
+        };
+
+        // The block editor canvas renders inside an iframe, which breaks native
+        // HTML5 drag-and-drop in inconsistent, browser-dependent ways. Gutenberg's
+        // own block reordering sidesteps this by tracking the pointer manually
+        // instead of relying on dragstart/dragover/drop - this does the same.
+        const handleDragHandleMouseDown = (index) => (e) => {
+            if (e.button !== 0) return; // left click only
+            e.preventDefault();
+
+            const container = listRef.current;
+            if (!container) return;
+
+            const ownerWindow = container.ownerDocument.defaultView || window;
+            let currentOverIndex = index;
+
+            setDragIndex(index);
+            setOverIndex(index);
+
+            const onMouseMove = (moveEvent) => {
+                const items = Array.from(container.children);
+                let newIndex = items.length - 1;
+                for (let i = 0; i < items.length; i++) {
+                    const rect = items[i].getBoundingClientRect();
+                    if (moveEvent.clientY < rect.top + rect.height / 2) {
+                        newIndex = i;
+                        break;
+                    }
+                }
+                if (newIndex !== currentOverIndex) {
+                    currentOverIndex = newIndex;
+                    setOverIndex(newIndex);
+                }
+            };
+
+            const onMouseUp = () => {
+                moveDocument(index, currentOverIndex);
+                setDragIndex(null);
+                setOverIndex(null);
+                ownerWindow.removeEventListener('mousemove', onMouseMove);
+                ownerWindow.removeEventListener('mouseup', onMouseUp);
+            };
+
+            ownerWindow.addEventListener('mousemove', onMouseMove);
+            ownerWindow.addEventListener('mouseup', onMouseUp);
         };
 
         const getFileExtension = (url) => {
@@ -140,21 +196,28 @@ registerBlockType('document-repo/document-block', {
                     createElement('h3', { style: { marginBottom: '15px' } }, title),
                     createElement(
                         'ul',
-                        { className: 'dr-doc-list dr-editor-list' },
-                        documents.map(doc => {
+                        { className: 'dr-doc-list dr-editor-list', ref: listRef },
+                        documents.map((doc, index) => {
                             const ext = getFileExtension(doc.url);
                             const type = getFileType(ext);
                             const iconClass = getIconClass(type);
                             const iconPrefix = getIconPrefix(type);
-                            
+                            const isDragging = dragIndex === index;
+                            const isOver = overIndex === index && dragIndex !== null && dragIndex !== index;
+
                             return createElement(
                                 'li',
-                                { 
-                                    key: doc.id, 
-                                    className: `dr-doc dr-doc-${type}`,
+                                {
+                                    key: doc.id,
+                                    className: `dr-doc dr-doc-${type}${isDragging ? ' dr-doc-dragging' : ''}${isOver ? ' dr-doc-drag-over' : ''}`,
                                     style: { position: 'relative' }
                                 },
-                                createElement('i', { 
+                                createElement('i', {
+                                    className: 'dr-drag-handle fa-solid fa-grip-vertical',
+                                    style: { marginRight: '8px', cursor: 'grab', color: '#999', touchAction: 'none' },
+                                    onMouseDown: handleDragHandleMouseDown(index)
+                                }),
+                                createElement('i', {
                                     className: `dr-icon ${iconPrefix} ${iconClass}`,
                                     style: { marginRight: '8px' }
                                 }),
@@ -163,7 +226,7 @@ registerBlockType('document-repo/document-block', {
                                     isSmall: true,
                                     isDestructive: true,
                                     onClick: () => removeDocument(doc.id),
-                                    style: { 
+                                    style: {
                                         marginLeft: 'auto',
                                         minWidth: '24px',
                                         height: '24px',
